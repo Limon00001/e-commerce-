@@ -3,6 +3,7 @@ const createError = require('http-errors');
 
 // Internal Dependencies
 const Client = require('../models/user.model');
+const { successResponse } = require('../controllers/response.controllers');
 
 // User Controllers
 const addUser = async (req, res, next) => {
@@ -35,19 +36,23 @@ const getAllUsers = async (req, res, next) => {
         const options = { password: 0 };
 
         const users = await Client.find(filter, options).limit(limit).skip((page - 1) * limit);  // Show All Users except `Admin`
-        if(!users) throw createError(404, 'No users found');
+
+        // if(users.length === 0) throw createError(404, 'No users found');
+        if(users.length === 0) return next(createError(404, 'No users found'));
 
         const count = await Client.find(filter).countDocuments();
-        
-        res.status(200).json({
-            success: true,
+
+        return successResponse(res, {
+            statusCode: 200,
             message: 'All users fetched successfully',
-            users: users,
-            pagination: {
-                totalPages: Math.ceil(count / limit),
-                currentPage: page,
-                previousPage: page - 1 > 0 ? page - 1 : null,
-                nextPage: page + 1 <= Math.ceil(count / limit)? page + 1 : null
+            payload: {
+                users: users,
+                pagination: {
+                    totalPages: Math.ceil(count / limit),
+                    currentPage: page,
+                    previousPage: page - 1 > 0 ? page - 1 : null,
+                    nextPage: page + 1 <= Math.ceil(count / limit)? page + 1 : null
+                }
             }
         })
     } catch (error) {

@@ -2,7 +2,7 @@
 const express = require('express');
 
 // Internal Dependencies
-const { addUser, getAllUsers } = require('../controllers/user.controllers');
+const { getAllUsers } = require('../controllers/user.controllers');
 
 // Initialize
 const userRouter = express.Router();
