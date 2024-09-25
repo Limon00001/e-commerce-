@@ -1,0 +1,25 @@
+{
+  "name": "e-commerce",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node ./src/server.js",
+    "dev": "nodemon ./src/server.js"
+  },
+  "keywords": [],
+  "author": "Monayem Hossain Limon",
+  "license": "ISC",
+  "description": "This e-commerce project aims to develop a user-friendly online platform that offers a seamless shopping experience, featuring a diverse range of products and categories.",
+  "devDependencies": {
+    "morgan": "^1.10.0",
+    "nodemon": "^3.1.7"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "express-rate-limit": "^7.4.0",
+    "http-errors": "^2.0.0",
+    "mongoose": "^8.6.3"
+  }
+}
