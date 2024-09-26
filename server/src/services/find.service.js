@@ -3,14 +3,13 @@ const mongoose = require("mongoose");
 const Client = require("../models/user.model");
 const createError = require('http-errors');
 
-// User Filter By ID
-const findUserById = async (id) => {
+// Filter By ID
+const findWithById = async (id, options = {}) => {
     try {
-        const options = { password: 0 };
-        const user = await Client.findById(id, options);
+        const element = await Client.findById(id, options);
 
-        if (!user) return createError(404, 'No user found');
-        return user;
+        if (!element) return createError(404, 'No user found');
+        return element;
     } catch (error) {
         if(error instanceof mongoose.Error) return createError(400, 'Invalid user id');
         throw error;
@@ -18,4 +17,4 @@ const findUserById = async (id) => {
 }
 
 // Module Export
-module.exports = { findUserById }
+module.exports = { findWithById }
