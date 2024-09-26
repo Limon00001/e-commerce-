@@ -68,7 +68,7 @@ const getUser = async (req, res, next) => {
     try {
         const { id } = req.params;
         const options = { password: 0 };
-        const user = await findWithById(id, options);
+        const user = await findWithById(Client, id, options);
 
         return successResponse(res, {
             payload: {
@@ -85,7 +85,11 @@ const deleteUser = async (req, res, next) => {
     try {
         const { id } = req.params;
         const options = { password: 0 };
-        const user = await findWithById(id, options);
+        const user = await findWithById(Client, id, options);
+
+        if (user instanceof Error) {
+            return next(user);
+        }
 
         const userImage = user.image;
         fs.access(userImage, (err) => {  
@@ -104,7 +108,7 @@ const deleteUser = async (req, res, next) => {
             message: 'User deleted successfully'
         })
     } catch (error) {
-        next(createError(500, 'Error fetching data'));
+        next(createError(500, 'Error deleting data'));
     }
 };
 

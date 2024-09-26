@@ -1,17 +1,16 @@
 // External Dependencies
 const mongoose = require("mongoose");
-const Client = require("../models/user.model");
 const createError = require('http-errors');
 
 // Filter By ID
-const findWithById = async (id, options = {}) => {
+const findWithById = async (Model, id, options = {}) => {
     try {
-        const element = await Client.findById(id, options);
+        const element = await Model.findById(id, options);
 
-        if (!element) return createError(404, 'No user found');
+        if (!element) return createError(404, `No ${Model.modelName} found`);
         return element;
     } catch (error) {
-        if(error instanceof mongoose.Error) return createError(400, 'Invalid user id');
+        if(error instanceof mongoose.Error) return createError(400, `Invalid ${Model.modelName} Id`);
         throw error;
     }
 }
