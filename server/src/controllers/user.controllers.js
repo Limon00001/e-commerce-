@@ -1,10 +1,10 @@
 // External Dependencies
 const createError = require('http-errors');
-const mongoose = require('mongoose');
 
 // Internal Dependencies
 const Client = require('../models/user.model');
 const { successResponse } = require('../controllers/response.controllers');
+const { findUserById } = require('../services/user.service');
 
 // User Controllers
 const addUser = async (req, res, next) => {
@@ -66,21 +66,14 @@ const getAllUsers = async (req, res, next) => {
 const getUser = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const options = { password: 0 };
-
-        const user = await Client.findById({_id: id}, options);
-
-        if (user.length === 0) return next(createError(404, 'No users found'));
+        const user = await findUserById(id);
 
         return successResponse(res, {
-            statusCode: 200,
-            message: 'User found',
             payload: {
                 user: user,
             }
         })
     } catch (error) {
-        if(error instanceof mongoose.Error) return next(createError(400, 'Invalid user id'));
         next(createError(500, 'Error fetching data'));
     }
 };
