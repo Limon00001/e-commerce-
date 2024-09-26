@@ -1,5 +1,6 @@
 // External Dependencies
 const createError = require('http-errors');
+const mongoose = require('mongoose');
 
 // Internal Dependencies
 const Client = require('../models/user.model');
@@ -17,6 +18,7 @@ const addUser = async (req, res, next) => {
     }
 };
 
+// Get All Users
 const getAllUsers = async (req, res, next) => {
     try {
         const search = req.query.search || '';
@@ -38,7 +40,7 @@ const getAllUsers = async (req, res, next) => {
         const users = await Client.find(filter, options).limit(limit).skip((page - 1) * limit);  // Show All Users except `Admin`
 
         // if(users.length === 0) throw createError(404, 'No users found');
-        if(users.length === 0) return next(createError(404, 'No users found'));
+        if (users.length === 0) return next(createError(404, 'No users found'));
 
         const count = await Client.find(filter).countDocuments();
 
@@ -51,7 +53,7 @@ const getAllUsers = async (req, res, next) => {
                     totalPages: Math.ceil(count / limit),
                     currentPage: page,
                     previousPage: page - 1 > 0 ? page - 1 : null,
-                    nextPage: page + 1 <= Math.ceil(count / limit)? page + 1 : null
+                    nextPage: page + 1 <= Math.ceil(count / limit) ? page + 1 : null
                 }
             }
         })
@@ -60,5 +62,28 @@ const getAllUsers = async (req, res, next) => {
     }
 };
 
+// Get Single User
+const getUser = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const options = { password: 0 };
+
+        const user = await Client.findById({_id: id}, options);
+
+        if (user.length === 0) return next(createError(404, 'No users found'));
+
+        return successResponse(res, {
+            statusCode: 200,
+            message: 'User found',
+            payload: {
+                user: user,
+            }
+        })
+    } catch (error) {
+        if(error instanceof mongoose.Error) return next(createError(400, 'Invalid user id'));
+        next(createError(500, 'Error fetching data'));
+    }
+};
+
 // Module Export
-module.exports = { addUser, getAllUsers };
+module.exports = { addUser, getAllUsers, getUser };
