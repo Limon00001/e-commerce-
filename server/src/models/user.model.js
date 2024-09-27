@@ -1,6 +1,6 @@
 // External Dependencies
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 // Internal Dependencies
 const { salt, defaultImagePath } = require('../secret');

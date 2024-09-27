@@ -6,8 +6,9 @@ const Client = require('../models/user.model');
 const { successResponse } = require('../controllers/response.controllers');
 const { findWithById } = require('../services/find.service');
 const { deleteImage } = require('../helpers/delete.image.helper');
-const { jwtAccessKey } = require('../secret');
+const { jwtAccessKey, clientSite } = require('../secret');
 const { createToken } = require('../helpers/token.helper');
+const { sendEmail } = require('../helpers/email.helper');
 
 // User Controllers
 // New User
@@ -20,12 +21,29 @@ const registerUser = async (req, res, next) => {
         if (existingUser) return next(createError(409, 'This email already exists. Please login.'));
 
         // Create Token
-        const token = createToken({ name, email, password, phone, address }, jwtAccessKey, '10m')
+        const token = createToken({ name, email, password, phone, address }, jwtAccessKey, '10m');
+
+        // Prepare Email
+        const emailData = {
+            email,
+            subject: 'Account Verification Email',
+            html: `
+            <h2>Hello ${name} !</h2>
+            <p>Please click here <a href='${clientSite}/api/users/activate/${token}' target='_blank'> to verify your account</a></p>
+            `
+        };
+
+        // Send Email
+        try {
+            await sendEmail(emailData);
+        } catch (error) {
+            return next(createError(500, 'Failed to send email'));
+        }
 
         // Response
         return successResponse(res, {
             statusCode: 200,
-            message: 'Token created successfully',
+            message: `Please check your email ${email}`,
             payload: { token }
         })
     } catch (error) {
