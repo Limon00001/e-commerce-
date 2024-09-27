@@ -1,5 +1,6 @@
 // External Dependencies
 const createError = require('http-errors');
+const jwt = require('jsonwebtoken');
 
 // Internal Dependencies
 const Client = require('../models/user.model');
@@ -45,6 +46,37 @@ const registerUser = async (req, res, next) => {
             statusCode: 200,
             message: `Please check your email ${email}`,
             payload: { token }
+        })
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Activate User
+const userActivation = async (req, res, next) => {
+    try {
+        const token = req.body.token;
+        if (!token) return next(createError(500, 'Authentication Failed!'));
+
+        const decoded = jwt.verify(token, jwtAccessKey);
+        if (!decoded) return next(createError(401, 'Authentication Failed!'));
+
+        // Create a user
+        const newUser = new Client({
+            name: decoded.name,
+            email: decoded.email,
+            password: decoded.password,
+            phone: decoded.phone,
+            address: decoded.address
+        });
+
+        // Save the user
+        await newUser.save();
+
+        // Response
+        return successResponse(res, {
+            statusCode: 200,
+            message: `Registration Successfully`,
         })
     } catch (error) {
         next(error);
@@ -138,4 +170,4 @@ const deleteUser = async (req, res, next) => {
 };
 
 // Module Export
-module.exports = { registerUser, getAllUsers, getUser, deleteUser };
+module.exports = { registerUser, getAllUsers, getUser, deleteUser, userActivation };
