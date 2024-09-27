@@ -6,13 +6,27 @@ const Client = require('../models/user.model');
 const { successResponse } = require('../controllers/response.controllers');
 const { findWithById } = require('../services/find.service');
 const { deleteImage } = require('../helpers/delete.image.helper');
+const { jwtAccessKey } = require('../secret');
+const { createToken } = require('../helpers/token.helper');
 
 // User Controllers
-const addUser = async (req, res, next) => {
+// New User
+const registerUser = async (req, res, next) => {
     try {
-        res.status(201).json({
-            success: true,
-            message: 'User added successfully'
+        const { name, email, password, phone, address } = req.body;
+
+        // Check user already exists or not
+        const existingUser = await Client.exists({ email: email });
+        if (existingUser) return next(createError(409, 'This email already exists. Please login.'));
+
+        // Create Token
+        const token = createToken({ name, email, password, phone, address }, jwtAccessKey, '10m')
+
+        // Response
+        return successResponse(res, {
+            statusCode: 200,
+            message: 'Token created successfully',
+            payload: { token }
         })
     } catch (error) {
         next(error);
@@ -92,10 +106,10 @@ const deleteUser = async (req, res, next) => {
         }
 
         const userImage = user.image;
-        
+
         deleteImage(userImage);
 
-        await Client.findByIdAndDelete({_id: id, isAdmin: false});
+        await Client.findByIdAndDelete({ _id: id, isAdmin: false });
 
         return successResponse(res, {
             message: 'User deleted successfully'
@@ -106,4 +120,4 @@ const deleteUser = async (req, res, next) => {
 };
 
 // Module Export
-module.exports = { addUser, getAllUsers, getUser, deleteUser };
+module.exports = { registerUser, getAllUsers, getUser, deleteUser };
