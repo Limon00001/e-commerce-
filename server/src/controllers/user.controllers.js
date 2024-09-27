@@ -58,26 +58,36 @@ const userActivation = async (req, res, next) => {
         const token = req.body.token;
         if (!token) return next(createError(500, 'Authentication Failed!'));
 
-        const decoded = jwt.verify(token, jwtAccessKey);
-        if (!decoded) return next(createError(401, 'Authentication Failed!'));
+        try {
+            const decoded = jwt.verify(token, jwtAccessKey);
+            if (!decoded) return next(createError(401, 'Authentication Failed!'));
 
-        // Create a user
-        const newUser = new Client({
-            name: decoded.name,
-            email: decoded.email,
-            password: decoded.password,
-            phone: decoded.phone,
-            address: decoded.address
-        });
+            // Check user already exists or not
+            const existingUser = await Client.exists({ email: decoded.email });
+            if (existingUser) return next(createError(409, 'This email already exists. Please login.'));
 
-        // Save the user
-        await newUser.save();
+            // Create a user
+            const newUser = new Client({
+                name: decoded.name,
+                email: decoded.email,
+                password: decoded.password,
+                phone: decoded.phone,
+                address: decoded.address
+            });
 
-        // Response
-        return successResponse(res, {
-            statusCode: 200,
-            message: `Registration Successfully`,
-        })
+            // Save the user
+            await newUser.save();
+
+            // Response
+            return successResponse(res, {
+                statusCode: 200,
+                message: `Registration Successfully`,
+            })
+        } catch (error) {
+            if (error.name === 'TokenExpiredError') return next(createError(401, 'Authentication Failed! Please try again later.'));
+            if (error.name === 'JsonWebToken') return next(createError(401, 'Invalid Link.'));
+            next(error);
+        }
     } catch (error) {
         next(error);
     }
