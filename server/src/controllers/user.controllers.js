@@ -1,11 +1,11 @@
 // External Dependencies
 const createError = require('http-errors');
-const fs = require('fs');
 
 // Internal Dependencies
 const Client = require('../models/user.model');
 const { successResponse } = require('../controllers/response.controllers');
 const { findWithById } = require('../services/find.service');
+const { deleteImage } = require('../helpers/delete.image.helper');
 
 // User Controllers
 const addUser = async (req, res, next) => {
@@ -92,15 +92,8 @@ const deleteUser = async (req, res, next) => {
         }
 
         const userImage = user.image;
-        fs.access(userImage, (err) => {  
-            if (err) {
-                return next(createError(404, 'Image not found'));
-            }
-            fs.unlink(userImage, (err) => {
-                if (err) return next(createError(500, 'Error deleting image'));
-                console.log('Image deleted successfully');
-            });
-        })
+        
+        deleteImage(userImage);
 
         await Client.findByIdAndDelete({_id: id, isAdmin: false});
 
