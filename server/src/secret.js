@@ -14,6 +14,7 @@ const jwtAccessKey = process.env.JWT_ACCESS_KEY;
 const smtpUser = process.env.SMTP_USERNAME || '';
 const smtpPassword = process.env.SMTP_PASSWORD || '';
 const clientSite = process.env.CLIENT_SITE;
+const uploadFolder = process.env.UPLOAD_DIR || 'public/images/users';
 
 // Module Export
-module.exports = { port, dbUrl, salt, defaultImagePath, jwtAccessKey, smtpUser, smtpPassword, clientSite };
+module.exports = { port, dbUrl, salt, defaultImagePath, jwtAccessKey, smtpUser, smtpPassword, clientSite, uploadFolder };
