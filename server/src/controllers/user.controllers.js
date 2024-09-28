@@ -36,7 +36,7 @@ const registerUser = async (req, res, next) => {
 
         // Send Email
         try {
-            // await sendEmail(emailData);
+            await sendEmail(emailData);
         } catch (error) {
             return next(createError(500, 'Failed to send email'));
         }

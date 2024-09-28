@@ -1,20 +1,14 @@
 // External Dependencies
 const multer = require('multer');
-const createError = require('http-errors');
 
 // Internal Dependencies
 const path = require('path');
-const { uploadFolder, maxFileSize, allowedFileTypes } = require('../secret');
-
-// Constants
-const UPLOAD_DIR = uploadFolder;
-const MAX_FILE_SIZE = maxFileSize;
-const ALLOWED_FILE_TYPES = allowedFileTypes;
+const { UPLOAD_USER_DIR, MAX_FILE_SIZE, FILE_TYPES } = require('../configs/config');
 
 // Multer Configuration
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, UPLOAD_DIR)
+        cb(null, UPLOAD_USER_DIR)
     },
     filename: function (req, file, cb) {
         const extname = path.extname(file.originalname);
@@ -27,9 +21,9 @@ const storage = multer.diskStorage({
 // File Filter
 function fileFilter(req, file, cb) {
     const extname = path.extname(file.originalname);
-    const isMatch = ALLOWED_FILE_TYPES.includes(extname.substring(1));
+    const isMatch = FILE_TYPES.includes(extname.substring(1));
     if (!isMatch) {
-        const error = createError(400, `File must be in 'jpg, 'jpeg' and 'png' format.`);
+        const error = new Error(`File must be in 'jpg, 'jpeg' and 'png' format.`);
         return cb(error);
     }
     cb(null, true);
@@ -39,7 +33,7 @@ function fileFilter(req, file, cb) {
 const upload = multer({
     storage: storage,
     limits: {
-        fileSize: Number(MAX_FILE_SIZE)
+        fileSize: MAX_FILE_SIZE
     },
     fileFilter
 })
