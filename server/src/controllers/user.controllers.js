@@ -17,12 +17,19 @@ const registerUser = async (req, res, next) => {
     try {
         const { name, email, password, phone, address } = req.body;
 
+        if(!req.file){
+            return next(createError(400, 'Please upload an image'));
+        }
+
+        // For Buffer image
+        const bufferImage = req.file.buffer.toString('base64');
+
         // Check user already exists or not
         const existingUser = await Client.exists({ email: email });
         if (existingUser) return next(createError(409, 'This email already exists. Please login.'));
 
         // Create Token
-        const token = createToken({ name, email, password, phone, address }, jwtAccessKey, '10m');
+        const token = createToken({ name, email, password, phone, address, image: bufferImage }, jwtAccessKey, '10m');
 
         // Prepare Email
         const emailData = {

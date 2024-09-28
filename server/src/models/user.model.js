@@ -38,8 +38,15 @@ const clientSchema = new mongoose.Schema({
         set: (password) => bcrypt.hashSync(password, bcrypt.genSaltSync(Number(salt)))
     },
     image: {
-        type: String,
-        default: defaultImagePath
+        // For String Type
+        // type: String,
+        // default: defaultImagePath,
+        // required: [true, 'Image is required'],
+
+        // For Buffer Type
+        type: Buffer,
+        contentType: String,
+        required: [true, 'Image is required'],
     },
     address: {
         type: String,
