@@ -10,19 +10,27 @@ const { deleteImage } = require('../helpers/delete.image.helper');
 const { jwtAccessKey, clientSite } = require('../secret');
 const { createToken } = require('../helpers/token.helper');
 const { sendEmail } = require('../helpers/email.helper');
+const { MAX_FILE_SIZE } = require('../configs/config');
 
 // User Controllers
 // New User
 const registerUser = async (req, res, next) => {
     try {
         const { name, email, password, phone, address } = req.body;
+        const image = req.file;
 
-        if(!req.file){
+        // Image validation
+        if (!image) {
             return next(createError(400, 'Please upload an image'));
         }
 
+        // Image size validation
+        if (image.size > MAX_FILE_SIZE) {
+            return next(createError(400, `File exceeds maximum size. Must be at less than 10 MB.`));
+        }
+
         // For Buffer image
-        const bufferImage = req.file.buffer.toString('base64');
+        const bufferImage = image.buffer.toString('base64');
 
         // Check user already exists or not
         const existingUser = await Client.exists({ email: email });
@@ -186,5 +194,43 @@ const deleteUser = async (req, res, next) => {
     }
 };
 
+// Update user
+const updateUser = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const options = { password: 0 };
+        await findWithById(Client, id, options);
+
+        const updatedOptions = { new: true, runValidators: true, context: 'query' };
+        let updateData = {};
+
+        for (let key in req.body) {
+            if (['name', 'phone', 'address', 'password'].includes(key)) {
+                updateData[key] = req.body[key];
+            } else if (['email'].includes(key)) {
+                return next(createError(404, 'You can\'t update your email'));
+            }
+        }
+
+        const image = req.file;
+        if (image) {
+            if (image.size > MAX_FILE_SIZE) return createError(400, 'File exceeds maximum size. Must be at less than 10 MB.');
+        }
+
+        const updatedUser = await Client.findByIdAndUpdate({_id: id}, updateData, updatedOptions);
+        // Validation
+        if(!updatedUser) return next(createError(404, 'User not found.'));
+
+        return successResponse(res, {
+            payload: {
+                user: updatedUser,
+            }
+        })
+    } catch (error) {
+        next(createError(500, 'Error fetching data'));
+    }
+};
+
+
 // Module Export
-module.exports = { registerUser, getAllUsers, getUser, deleteUser, userActivation };
+module.exports = { registerUser, getAllUsers, getUser, deleteUser, userActivation, updateUser };

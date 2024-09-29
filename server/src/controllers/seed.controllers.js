@@ -17,6 +17,7 @@ const seedUser = async (req, res, next) => {
         // Response
         return res.status(201).json(newUser);
     } catch (error) {
+        console.error('Error during user seeding:', error);
         next(createError(500, 'We encountered a technical issue while processing your registration. Please try again later.'));
     }
 }

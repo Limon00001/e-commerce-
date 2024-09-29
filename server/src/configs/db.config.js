@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const { dbUrl } = require('../secret');
 
 // Database Configuration
-const dbConfig = async (options ={}) => {
+const dbConfig = async (options = {}) => {
     try {
         await mongoose.connect(dbUrl, options);
         console.log(`Database setup successful`);

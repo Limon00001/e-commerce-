@@ -8,6 +8,10 @@ const findWithById = async (Model, id, options = {}) => {
         const element = await Model.findById(id, options);
 
         if (!element) return createError(404, `No ${Model.modelName} found`);
+
+        // if (!mongoose.isValidObjectId(id)) {
+        //     throw new Error(`Invalid ${Model.modelName} Id`);
+        // }
         return element;
     } catch (error) {
         if(error instanceof mongoose.Error) return createError(400, `Invalid ${Model.modelName} Id`);
