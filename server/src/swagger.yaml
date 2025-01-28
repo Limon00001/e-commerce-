@@ -1,0 +1,276 @@
+swagger: '2.0'
+info:
+  title: User Management API
+  description: >-
+    API for managing users, including registration, updating, deletion, and
+    activation.
+  version: 1.0.0
+host: 'localhost:3000'
+basePath: /api/v1
+schemes:
+  - http
+tags:
+  - name: Users
+    description: Operations related to user management
+paths:
+  /users:
+    get:
+      tags:
+        - Users
+      summary: Get all users
+      description: >-
+        Returns a list of all users in the system with pagination and search
+        options.
+      parameters:
+        - in: query
+          name: search
+          description: 'Search term for filtering users by name, email, or phone.'
+          required: false
+          type: string
+        - in: query
+          name: page
+          description: The page number for pagination
+          required: false
+          type: integer
+        - in: query
+          name: limit
+          description: Number of users per page
+          required: false
+          type: integer
+      responses:
+        '200':
+          description: A list of users with pagination data
+          schema:
+            type: object
+            properties:
+              users:
+                type: array
+                items:
+                  $ref: '#/definitions/User'
+              pagination:
+                type: object
+                properties:
+                  totalPages:
+                    type: integer
+                  currentPage:
+                    type: integer
+                  previousPage:
+                    type: integer
+                    nullable: true
+                  nextPage:
+                    type: integer
+                    nullable: true
+        '500':
+          description: Server error
+  '/users/{id}':
+    get:
+      tags:
+        - Users
+      summary: Get a user by ID
+      description: Fetch a single user by their unique ID.
+      parameters:
+        - in: path
+          name: id
+          description: The ID of the user to retrieve
+          required: true
+          type: string
+      responses:
+        '200':
+          description: The user with the specified ID
+          schema:
+            type: object
+            properties:
+              user:
+                $ref: '#/definitions/User'
+        '404':
+          description: User not found
+        '500':
+          description: Server error
+    put:
+      tags:
+        - Users
+      summary: Update a user by ID
+      description: >-
+        Update the details of a user, excluding email (email is not allowed to
+        be updated).
+      parameters:
+        - in: path
+          name: id
+          description: The ID of the user to update
+          required: true
+          type: string
+        - in: formData
+          name: name
+          description: The user's full name
+          required: false
+          type: string
+        - in: formData
+          name: phone
+          description: The user's phone number
+          required: false
+          type: string
+        - in: formData
+          name: address
+          description: The user's address
+          required: false
+          type: string
+        - in: formData
+          name: password
+          description: The user's password
+          required: false
+          type: string
+        - in: formData
+          name: image
+          description: The user's profile picture (optional)
+          required: false
+          type: file
+      responses:
+        '200':
+          description: The updated user
+          schema:
+            type: object
+            properties:
+              user:
+                $ref: '#/definitions/User'
+        '404':
+          description: User not found
+        '500':
+          description: Server error
+    delete:
+      tags:
+        - Users
+      summary: Delete a user by ID
+      description: Deletes the user by their unique ID and removes their associated image.
+      parameters:
+        - in: path
+          name: id
+          description: The ID of the user to delete
+          required: true
+          type: string
+      responses:
+        '200':
+          description: User deleted successfully
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: User deleted successfully
+        '404':
+          description: User not found
+        '500':
+          description: Server error
+  /users/register:
+    post:
+      tags:
+        - Users
+      summary: Register a new user
+      description: >-
+        Registers a new user with their details, including an optional profile
+        picture.
+      consumes:
+        - multipart/form-data
+      parameters:
+        - in: formData
+          name: name
+          description: The user's full name
+          required: true
+          type: string
+        - in: formData
+          name: email
+          description: The user's email address
+          required: true
+          type: string
+          format: email
+        - in: formData
+          name: password
+          description: The user's password
+          required: true
+          type: string
+          format: password
+        - in: formData
+          name: phone
+          description: The user's phone number
+          required: true
+          type: string
+        - in: formData
+          name: address
+          description: The user's address
+          required: true
+          type: string
+        - in: formData
+          name: image
+          description: The user's profile picture
+          required: true
+          type: file
+      responses:
+        '201':
+          description: User successfully registered
+        '400':
+          description: Bad request (invalid data)
+        '500':
+          description: Server error
+  /users/verify:
+    post:
+      tags:
+        - Users
+      summary: Activate a user account
+      description: Activates a user account using the provided verification token.
+      parameters:
+        - in: body
+          name: token
+          description: The token to verify and activate the user account
+          required: true
+          schema:
+            type: object
+            properties:
+              token:
+                type: string
+                example: example-jwt-token
+      responses:
+        '200':
+          description: User successfully activated and registered
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Registration Successfully
+        '400':
+          description: Bad request (invalid or missing token)
+        '401':
+          description: Authentication failed (invalid or expired token)
+        '409':
+          description: Email already exists (user already registered)
+        '500':
+          description: Server error
+definitions:
+  User:
+    type: object
+    required:
+      - id
+      - name
+      - email
+      - password
+    properties:
+      id:
+        type: string
+        example: '12345'
+      name:
+        type: string
+        example: John Doe
+      email:
+        type: string
+        example: john.doe@example.com
+      password:
+        type: string
+        example: password123
+      phone:
+        type: string
+        example: '1234567890'
+      address:
+        type: string
+        example: '123 Main St, Springfield, IL'
+      image:
+        type: string
+        example: 'https://example.com/profile.jpg'
